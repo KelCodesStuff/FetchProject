@@ -1,0 +1,68 @@
+name: Fetch Project Pipeline
+
+on:
+  push:
+    branches: [main, develop] # Customize branches to trigger the workflow
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  build-and-test:
+    runs-on: macos-latest # Use a macOS runner
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install CocoaPods (if applicable)
+        if: ${{ matrix.cocoapods }} # Conditional execution
+        run: gem install cocoapods
+
+      - name: Install dependencies (CocoaPods)
+        if: ${{ matrix.cocoapods }}
+        run: pod install --repo-update
+
+      - name: Install dependencies (Swift Package Manager)
+        if: ${{ !matrix.cocoapods }} # If NOT using Cocoapods
+        run: swift package resolve
+
+      - name: Select Xcode version
+        uses: maxim-ilian/xcode-select@v1
+        with:
+          xcode-version: '14.0' # Or your desired Xcode version
+
+      - name: Build and Test
+        run: |
+          xcodebuild clean build-for-testing \
+            -scheme "FetchProject" \
+            -destination "platform=iOS Simulator,name=iPhone 16 Pro Max" \ 
+            -test-without-building \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO
+
+      - name: Upload test results (optional)
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-results
+          path: build/test-results/*.xctestresults # Adjust path if needed
+
+      - name: Archive and Distribute (Optional - TestFlight/App Store)
+        if: github.ref == 'refs/heads/main' # Only for pushes to main (or your release branch)
+        env:
+          APP_STORE_CONNECT_API_KEY: ${{ secrets.APP_STORE_CONNECT_API_KEY }} # Securely store API key
+          # ... other distribution related secrets
+
+        run: |
+          xcodebuild archive \
+            -scheme "YourSchemeName" \
+            -archivePath "YourAppName.xcarchive" \
+            CODE_SIGN_IDENTITY="${{ secrets.CODE_SIGN_IDENTITY }}" \
+            CODE_SIGNING_REQUIRED=YES \
+            CODE_SIGNING_PROFILE_UUID="${{ secrets.CODE_SIGNING_PROFILE_UUID }}" # Or use match n code signing
+
+          # Example using fastlane (highly recommended for distribution)
+          # gem install fastlane
+          # fastlane match n code signing --readonly true # Optional: If you are using match
+          # fastlane pilot # Or fastlane deliver for App Store
+
+          

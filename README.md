@@ -12,7 +12,7 @@
 
 
 ### Focus Areas: What specific areas of the project did you prioritize? Why did you choose to focus on these areas?
-I prioritized the Views of the app. I chose that area because prioritizing areas users interact with is very important. 
+I prioritized the Views of the app. I chose that area because prioritizing areas users interact with the most is very important. 
 
 ### Time Spent: Approximately how long did you spend working on this project? How did you allocate your time?
 I spent about six hours total over two days. 

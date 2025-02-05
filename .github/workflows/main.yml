@@ -27,7 +27,7 @@ jobs:
         run: swift package resolve
 
       - name: Select Xcode version
-        uses: maxim-ilian/xcode-select@v1
+        uses: actions/setup-xcode@v2
         with:
           xcode-version: '14.0' # Or your desired Xcode version
 
